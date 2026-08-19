@@ -64,8 +64,7 @@
   - [Production Build & Start](#production-build--start)
   - [Render Cloud Deployment](#render-cloud-deployment)
 - [9. Performance & SLA Benchmarks](#9-performance--sla-benchmarks)
-- [10. Frequently Asked Questions (FAQ)](#10-frequently-asked-questions-faq)
-- [11. License & Credits](#11-license--credits)
+- [10. License & Credits](#11-license--credits)
 
 ---
 
@@ -538,19 +537,7 @@ npm start
 
 ---
 
-## 10. Frequently Asked Questions (FAQ)
 
-#### Q: How does ApexQueue prevent duplicate job execution?
-**A**: ApexQueue uses atomic database reservation transactions (`BEGIN IMMEDIATE` / `SKIP LOCKED`). When a worker claims a job, the status is updated to `CLAIMED` in a single transaction, making it impossible for secondary workers to claim the same job.
-
-#### Q: What happens when a worker node crashes mid-execution?
-**A**: Active workers update their heartbeat timestamp every 3 seconds. The `StaleWorkerReaper` daemon checks every 5 seconds for workers with heartbeats older than 15 seconds. Dead workers are marked `DEAD`, and their orphaned jobs are automatically re-queued.
-
-#### Q: Can I run ApexQueue in a single Web Service deployment?
-**A**: Yes! In production, the Node.js backend automatically serves the static React frontend bundle from `frontend/dist` with client-side SPA routing fallback.
-
----
-
-## 11. License & Credits
+## 10. License & Credits
 
 Distributed under the **MIT License**. Created by [Lakshman](https://github.com/Lakshman2405) for enterprise distributed systems evaluation.
