@@ -9,40 +9,40 @@ ApexQueue is an enterprise-grade, multi-tenant distributed job scheduler and wor
 ```mermaid
 flowchart TD
     subgraph Client Layer
-        WebUI[React Enterprise Dashboard]
-        CLI[API Client / Microservice SDK]
+        WebUI["React Enterprise Dashboard"]
+        CLI["API Client / Microservice SDK"]
     end
 
     subgraph API Gateway & Ingress Layer
-        Router[Express / Fastify REST Gateway]
-        Auth[JWT & API Key Validator]
-        RBAC[Role-Based Access Controller]
-        Deduper[Idempotency Deduplication Key Cache]
+        Router["Express / Fastify REST Gateway"]
+        Auth["JWT & API Key Validator"]
+        RBAC["Role-Based Access Controller"]
+        Deduper["Idempotency Deduplication Key Cache"]
     end
 
     subgraph Core Engine Services
-        Leader[Active Leader Election Coordinator]
-        TimingWheel[O(1) Hashed Timing Wheel Scheduler]
-        DAG[Topological DAG Workflow Orchestrator]
-        CircuitBreaker[Queue Circuit Breaker Registry]
+        Leader["Active Leader Election Coordinator"]
+        TimingWheel["O(1) Hashed Timing Wheel Scheduler"]
+        DAG["Topological DAG Workflow Orchestrator"]
+        CircuitBreaker["Queue Circuit Breaker Registry"]
     end
 
     subgraph Storage Layer
-        DB[(SQLite Transactional Relational Database)]
+        DB[("SQLite Transactional Relational Database")]
     end
 
     subgraph Stateless Worker Cluster
-        W1[Worker Node 1 - Pool General]
-        W2[Worker Node 2 - Pool General]
-        W3[Worker Node 3 - Pool Analytics]
-        Reaper[Stale Worker Reaper Daemon]
+        W1["Worker Node 1 - Pool General"]
+        W2["Worker Node 2 - Pool General"]
+        W3["Worker Node 3 - Pool Analytics"]
+        Reaper["Stale Worker Reaper Daemon"]
     end
 
     subgraph Observability & AI Diagnostics
-        Metrics[Prometheus Metrics Generator]
-        WS[WebSocket Telemetry Server]
-        DLQ[Dead Letter Queue Escalation Vault]
-        AI[AI Root Cause Diagnostic Engine]
+        Metrics["Prometheus Metrics Generator"]
+        WS["WebSocket Telemetry Server"]
+        DLQ["Dead Letter Queue Escalation Vault"]
+        AI["AI Root Cause Diagnostic Engine"]
     end
 
     WebUI --> Router
@@ -81,7 +81,7 @@ flowchart TD
 - **Solution**: ApexQueue utilizes atomic SQL transactions (`BEGIN IMMEDIATE` / `SKIP LOCKED`). When a worker polls a queue partition, the query selects `QUEUED` candidate jobs matching priority and execution time, marks `status = 'CLAIMED'`, assigns `worker_id = ?`, and returns the claimed rows in a single atomic transaction.
 
 ### B. Sub-Second O(1) Hashed Timing Wheel (`TimingWheelService`)
-- **Problem**: Traditional schedulers perform expensive `$O(N)$` database table scans every second to locate delayed jobs or recurring cron triggers, causing severe DB CPU spikes.
+- **Problem**: Traditional schedulers perform expensive $O(N)$ database table scans every second to locate delayed jobs or recurring cron triggers, causing severe DB CPU spikes.
 - **Solution**: ApexQueue implements a circular 60-slot **Hashed Timing Wheel**. Delayed and cron jobs are registered into discrete time slots based on `run_at % 60`. Every 100ms, the wheel advances its tick pointer and enqueues only the jobs registered in the current slot in $O(1)$ time.
 
 ### C. Active-Passive Leader Election Coordinator (`LeaderElectionService`)
@@ -99,15 +99,15 @@ flowchart TD
 ```mermaid
 stateDiagram-v2
     [*] --> REGISTERED: Worker Daemon Starts
-    REGISTERED --> ACTIVE: Handshake & CPU/RAM Metric Baseline
+    REGISTERED --> ACTIVE: Handshake Baseline
     
     state ACTIVE {
         [*] --> IDLE
         IDLE --> CLAIMING: Poll Queue Partition
         CLAIMING --> RUNNING: Atomic Claim Success
         RUNNING --> COMPLETED: Execution Success
-        RUNNING --> RETRYING: Failure (Attempts < Max)
-        RUNNING --> DLQ: Permanent Failure (Attempts >= Max)
+        RUNNING --> RETRYING: Attempt Below Max
+        RUNNING --> DLQ: Attempt Reached Max
         RETRYING --> IDLE: Backoff Timer Expired
         COMPLETED --> IDLE
     }

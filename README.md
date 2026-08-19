@@ -40,25 +40,25 @@
 
 ```mermaid
 flowchart TD
-    Client[Client REST / SDK] --> Gateway[API Gateway / Auth Router]
-    Cron[Recurring Cron Engine] --> TW[O(1) Hashed Timing Wheel]
+    Client["Client REST / SDK"] --> Gateway["API Gateway / Auth Router"]
+    Cron["Recurring Cron Engine"] --> TW["O(1) Hashed Timing Wheel"]
     TW --> Gateway
     
-    Gateway --> DB[(SQLite Transactional DB)]
+    Gateway --> DB[("SQLite Transactional DB")]
     
     subgraph Core Cluster Coordinator
-        Leader[Active Leader Node]
-        Reaper[Stale Worker Reaper Daemon]
-        CB[Queue Circuit Breaker Registry]
+        Leader["Active Leader Node"]
+        Reaper["Stale Worker Reaper Daemon"]
+        CB["Queue Circuit Breaker Registry"]
     end
     
     DB <--> Leader
     Leader --> Reaper
     
     subgraph Stateless Worker Cluster
-        W1[Worker Node 1 - 5 Threads]
-        W2[Worker Node 2 - 5 Threads]
-        W3[Worker Node 3 - 5 Threads]
+        W1["Worker Node 1 - 5 Threads"]
+        W2["Worker Node 2 - 5 Threads"]
+        W3["Worker Node 3 - 5 Threads"]
     end
     
     DB -- "Atomic Claim (SKIP LOCKED)" --> W1
@@ -69,11 +69,11 @@ flowchart TD
     W2 -- "Heartbeat (3s)" --> DB
     W3 -- "Heartbeat (3s)" --> DB
     
-    W1 -- "Permanent Failure" --> DLQ[Dead Letter Queue]
-    DLQ --> AI[AI Diagnostics & 1-Click Replay]
+    W1 -- "Permanent Failure" --> DLQ["Dead Letter Queue"]
+    DLQ --> AI["AI Diagnostics & 1-Click Replay"]
     
-    DB --> WS[WebSocket Telemetry Server]
-    WS --> UI[React Enterprise Dashboard]
+    DB --> WS["WebSocket Telemetry Server"]
+    WS --> UI["React Enterprise Dashboard"]
 ```
 
 ---
