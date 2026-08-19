@@ -1,0 +1,16 @@
+{
+  "name": "apexqueue-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ApexQueue - Enterprise Distributed Job & Workflow Scheduler Engine",
+  "scripts": {
+    "dev": "concurrently -n \"backend,frontend\" -c \"blue,emerald\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "npm --prefix backend run start",
+    "test": "npm --prefix backend test",
+    "seed": "npm --prefix backend run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
