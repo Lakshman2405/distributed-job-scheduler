@@ -186,3 +186,17 @@ Clients subscribe to real-time execution events over WebSocket:
   "timestamp": "2026-08-19T23:55:01.000Z"
 }
 ```
+
+---
+
+## 4. 1-Click Postman Collection Testing
+
+Evaluators can import the pre-configured Postman collection file to execute live REST requests against local or production deployments:
+
+- **Collection File Path**: `docs/ApexQueue.postman_collection.json`
+- **Included Requests**:
+  1. `POST /api/v1/auth/login` (Authentication)
+  2. `GET /api/v1/queues` (Queue Statistics & Metrics)
+  3. `POST /api/v1/jobs` (Enqueue Immediate Job Payload)
+  4. `GET /api/v1/jobs` (Job Filtering & Search)
+  5. `POST /api/v1/chaos/trigger` (Simulate Worker Crash / Poison Pill)

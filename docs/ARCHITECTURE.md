@@ -132,3 +132,13 @@ ApexQueue natively orchestrates complex dependency graph pipelines (`workflows`,
 1. **Pipeline Execution**: When a workflow is triggered, root nodes (nodes with 0 parent dependencies) are enqueued immediately.
 2. **Dependency Resolution**: When a parent node completes, `DagOrchestrator` inspects child nodes and evaluates join conditions (`ALL_SUCCESS` vs `ANY_SUCCESS`).
 3. **Step Enqueuing**: Once join conditions are satisfied, child step jobs are dynamically enqueued into their target queues.
+
+---
+
+## 5. Containerization & Production Health Probes
+
+ApexQueue is containerized via a multi-stage `Dockerfile` and `docker-compose.yml`:
+
+- **Build Stage**: Compiles backend TypeScript (`tsc`) and Vite React frontend bundle (`vite build`).
+- **Runner Stage**: Minimal Node.js runtime image containing only production dependencies.
+- **Container Health Probes**: Automated HTTP health check probe querying `GET /health` every 30 seconds to ensure auto-healing during container orchestration.
