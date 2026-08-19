@@ -74,7 +74,7 @@ export function runSeed() {
   const qHigh = QueueService.createQueue({
     projectId,
     workerPoolId: poolGeneralId,
-    name: 'high-priority-transactions',
+    name: 'High-Priority Transactions',
     priority: 10,
     concurrencyLimit: 5,
     rateLimitPerSec: 200,
@@ -84,7 +84,7 @@ export function runSeed() {
   const qBatch = QueueService.createQueue({
     projectId,
     workerPoolId: poolGeneralId,
-    name: 'batch-etl-processing',
+    name: 'Batch ETL Processing',
     priority: 5,
     concurrencyLimit: 3,
     rateLimitPerSec: 50,
@@ -94,7 +94,7 @@ export function runSeed() {
   const qEmail = QueueService.createQueue({
     projectId,
     workerPoolId: poolGeneralId,
-    name: 'email-notifications',
+    name: 'Email Notifications',
     priority: 7,
     concurrencyLimit: 8,
     rateLimitPerSec: 500,
@@ -104,7 +104,7 @@ export function runSeed() {
   const qAi = QueueService.createQueue({
     projectId,
     workerPoolId: poolGpuId,
-    name: 'ai-model-inference',
+    name: 'AI Model Inference',
     priority: 9,
     concurrencyLimit: 2,
     rateLimitPerSec: 20,
