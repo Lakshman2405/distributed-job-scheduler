@@ -1,25 +1,60 @@
-# Software Engineering Principles & Architectural Patterns Matrix
+# 🏛️ ApexQueue Software Engineering Principles & Patterns Specification
 
-ApexQueue is built adhering strictly to enterprise Software Engineering principles, SOLID design guidelines, and fault-tolerance patterns.
+ApexQueue strictly adheres to enterprise Software Engineering principles, SOLID design guidelines, and fault-tolerance patterns.
 
 ---
 
 ## 1. SOLID Principles Implementation
 
+```mermaid
+classDiagram
+    class IRetryStrategy {
+        <<interface>>
+        +calculateDelayMs(attemptNumber, baseDelayMs, maxDelayMs)
+    }
+    class FixedRetryStrategy {
+        +calculateDelayMs()
+    }
+    class LinearRetryStrategy {
+        +calculateDelayMs()
+    }
+    class ExponentialJitterRetryStrategy {
+        +calculateDelayMs()
+    }
+    IRetryStrategy <|-- FixedRetryStrategy
+    IRetryStrategy <|-- LinearRetryStrategy
+    IRetryStrategy <|-- ExponentialJitterRetryStrategy
+
+    class IJobRepository {
+        <<interface>>
+        +findById(id)
+        +findQueuedCandidates(queueId, limit)
+        +updateStatus(id, status)
+        +insert(job)
+    }
+    class JobRepository {
+        +findById()
+        +findQueuedCandidates()
+        +updateStatus()
+        +insert()
+    }
+    IJobRepository <|-- JobRepository
+```
+
 ### A. Single Responsibility Principle (SRP)
-- **Data Access Layer (`JobRepository.ts`, `QueueRepository.ts`)**: Handles only database queries and SQL isolation.
-- **Service Domain Layer (`JobService.ts`, `QueueService.ts`)**: Handles core business logic, status transitions, and retry policies.
-- **Presentation Gateway Layer (`apiRoutes.ts`)**: Handles HTTP REST request validation, response formatting, and status codes.
+- **Data Access Layer (`JobRepository.ts`, `QueueRepository.ts`)**: Encapsulates raw SQL queries and data mapping.
+- **Service Domain Layer (`JobService.ts`, `QueueService.ts`)**: Encapsulates state machine transitions, dependency checks, and failure handling.
+- **Presentation Layer (`apiRoutes.ts`)**: Encapsulates REST request validation, response formatting, and HTTP status codes.
 
 ### B. Open/Closed Principle (OCP)
-- **Pluggable Strategy Pattern for Retries (`RetryStrategy.ts`)**:
-  - The `IRetryStrategy` interface allows new retry strategies (e.g. `FibonacciBackoff`, `ExponentialJitter`) to be added without modifying existing `JobService` execution code.
+- **Pluggable Strategy Pattern (`RetryStrategy.ts`)**:
+  - The `IRetryStrategy` interface enables adding new backoff algorithms without altering core `JobService` execution code.
 
 ### C. Liskov Substitution Principle (LSP)
-- All concrete retry implementations (`FixedRetryStrategy`, `LinearRetryStrategy`, `ExponentialJitterRetryStrategy`) can be substituted interchangeably through the `IRetryStrategy` interface without altering system behavior.
+- All concrete retry implementations (`FixedRetryStrategy`, `LinearRetryStrategy`, `ExponentialJitterRetryStrategy`) can be substituted interchangeably through `IRetryStrategy` without breaking job retries.
 
 ### D. Interface Segregation Principle (ISP)
-- Small, focused interfaces: `IRetryStrategy`, `IJobRepository`, `IWorkerDaemon`, `ITelemetryPublisher`. Clients depend only on the specific methods they require.
+- Small, focused interfaces: `IRetryStrategy`, `IJobRepository`, `IWorkerDaemon`, `ITelemetryPublisher`.
 
 ### E. Dependency Inversion Principle (DIP)
 - High-level orchestrators (`WorkerDaemon`) depend on storage and strategy abstractions rather than hardcoded query logic.
@@ -28,21 +63,19 @@ ApexQueue is built adhering strictly to enterprise Software Engineering principl
 
 ## 2. Design Patterns Applied
 
-| Pattern Name | Location in Codebase | Purpose & Benefit |
+| Pattern Name | Location in Codebase | Architectural Purpose |
 | :--- | :--- | :--- |
-| **Strategy Pattern** | `src/patterns/strategies/RetryStrategy.ts` | Pluggable backoff algorithms (Fixed, Linear, Exponential Jitter) for job failures. |
-| **Circuit Breaker Pattern** | `src/patterns/circuitBreaker/CircuitBreaker.ts` | Trips queue execution to `OPEN` state during high error spikes, protecting downstream databases. |
-| **Repository Pattern** | `src/patterns/repositories/JobRepository.ts` | Decouples SQL database queries away from domain services. |
-| **Active-Passive Leader Election** | `src/services/LeaderElectionService.ts` | Lease-lock coordinator preventing split-brain cron execution during scale-out. |
-| **Hashed Timing Wheel** | `src/services/TimingWheelService.ts` | O(1) time-slot index engine for high-precision sub-second job scheduling. |
-| **Observer (Pub/Sub) Pattern** | `src/websocket/telemetryServer.ts` | Decouples worker execution daemons from real-time WebSocket dashboard broadcasts. |
+| **Strategy Pattern** | `src/patterns/strategies/RetryStrategy.ts` | Pluggable backoff retry algorithms. |
+| **Circuit Breaker Pattern** | `src/patterns/circuitBreaker/CircuitBreaker.ts` | Trips execution when queue error rates spike (>50%). |
+| **Repository Pattern** | `src/patterns/repositories/JobRepository.ts` | Decouples SQL database queries from business services. |
+| **Active-Passive Leader Coordinator** | `src/services/LeaderElectionService.ts` | Distributed lease lock manager preventing multi-leader cron execution. |
+| **Hashed Timing Wheel** | `src/services/TimingWheelService.ts` | $O(1)$ time-slot index engine for sub-second scheduling. |
+| **Observer (Pub/Sub) Pattern** | `src/websocket/telemetryServer.ts` | Decouples worker daemons from real-time WebSocket dashboard broadcasts. |
 | **Idempotency Key Pattern** | `src/services/JobService.ts` | Payload deduplication window preventing duplicate execution side-effects. |
-| **Dead Worker Reaper (Daemon Pattern)** | `src/workers/StaleWorkerReaper.ts` | Heartbeat monitoring daemon auto-reclaiming claimed jobs from crashed workers. |
 
 ---
 
 ## 3. Resilience & Fault Isolation Patterns
 
-1. **Bulkhead Worker Isolation**: Distinct worker pools (`pool_general` vs `pool_gpu`) isolate heavy background execution workloads so high-memory tasks never starve real-time queues.
-2. **Exponential Backoff with Full Jitter**: Randomizes retry delays (`MIN(max_delay, random(0, base * 2^attempt))`), eliminating thundering herd traffic against failing services.
-3. **Poison Pill Escaper (DLQ)**: Infinite loop detector moving non-recoverable job payloads to the Dead Letter Queue for AI root-cause diagnostic analysis.
+> [!IMPORTANT]
+> **Bulkhead Isolation**: Worker thread pools (`pool_general` vs `pool_gpu`) isolate heavy background execution workloads so high-memory tasks never starve real-time queues.
