@@ -2,6 +2,8 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import { initDatabase } from './database/db';
 import { apiRouter } from './controllers/apiRoutes';
 import { TelemetryServer } from './websocket/telemetryServer';
@@ -38,14 +40,30 @@ app.get('/health', (req, res) => {
   res.json(MetricsService.getSystemHealth());
 });
 
-// 5. Initialize WebSocket Telemetry Server
+// 5. Serve React Dashboard Static Bundle & SPA Fallback
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/metrics') || req.path.startsWith('/health')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('🚀 ApexQueue Backend Engine Running! Access REST API at /api/v1');
+  });
+}
+
+// 6. Initialize WebSocket Telemetry Server
 TelemetryServer.init(server);
 
-// 6. Start Background Infrastructure Services
+// 7. Start Background Infrastructure Services
 TimingWheelService.start();
 StaleWorkerReaper.start();
 
-// 7. Spawn Worker Daemons
+// 8. Spawn Worker Daemons
 const worker1 = new WorkerDaemon(5);
 const worker2 = new WorkerDaemon(5);
 worker1.start();
