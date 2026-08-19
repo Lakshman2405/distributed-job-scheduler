@@ -38,6 +38,10 @@
 
 ## 🏗️ System Architecture Overview
 
+<div align="center">
+  <img src="docs/assets/architecture_diagram.png" alt="ApexQueue Enterprise Architecture" width="100%" />
+</div>
+
 ```mermaid
 flowchart TD
     Client["Client REST / SDK"] --> Gateway["API Gateway / Auth Router"]

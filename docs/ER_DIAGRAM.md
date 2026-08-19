@@ -6,6 +6,10 @@ ApexQueue uses a fully normalized, high-performance relational database schema d
 
 ## 1. Entity Relationship Diagram (ERD)
 
+<div align="center">
+  <img src="assets/er_diagram.png" alt="ApexQueue Enterprise Relational Database ER Diagram" width="100%" />
+</div>
+
 ```mermaid
 erDiagram
     ORGANIZATIONS ||--|{ USERS : owns

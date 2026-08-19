@@ -6,6 +6,10 @@ ApexQueue is an enterprise-grade, multi-tenant distributed job scheduler and wor
 
 ## 1. High-Level Distributed Architecture
 
+<div align="center">
+  <img src="assets/architecture_diagram.png" alt="ApexQueue Enterprise Architecture" width="100%" />
+</div>
+
 ```mermaid
 flowchart TD
     subgraph Client Layer
