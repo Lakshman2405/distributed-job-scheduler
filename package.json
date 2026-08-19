@@ -4,6 +4,7 @@
   "private": true,
   "description": "ApexQueue - Enterprise Distributed Job & Workflow Scheduler Engine",
   "scripts": {
+    "postinstall": "npm --prefix backend install --include=dev && npm --prefix frontend install --include=dev",
     "dev": "concurrently -n \"backend,frontend\" -c \"blue,emerald\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
     "start": "npm --prefix backend run start",
