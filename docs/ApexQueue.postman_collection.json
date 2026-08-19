@@ -1,0 +1,67 @@
+{
+  "info": {
+    "name": "ApexQueue Enterprise Scheduler API",
+    "description": "Complete REST API collection for ApexQueue Distributed Scheduler Engine",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@apex.local\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": { "raw": "http://localhost:4000/api/v1/auth/login", "protocol": "http", "host": ["localhost"], "port": "4000", "path": ["api", "v1", "auth", "login"] }
+      }
+    },
+    {
+      "name": "Queues - List All Queues",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "x-api-key", "value": "apex_live_key_99887766" }],
+        "url": { "raw": "http://localhost:4000/api/v1/queues", "protocol": "http", "host": ["localhost"], "port": "4000", "path": ["api", "v1", "queues"] }
+      }
+    },
+    {
+      "name": "Jobs - Enqueue Immediate Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-api-key", "value": "apex_live_key_99887766" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queueId\": \"queue_payments\",\n  \"type\": \"IMMEDIATE\",\n  \"payload\": {\n    \"transactionId\": \"tx_postman_999\",\n    \"amount\": 450.00,\n    \"recipient\": \"Stripe Merchant\"\n  },\n  \"priority\": 10,\n  \"delayMs\": 0,\n  \"idempotencyKey\": \"idem_postman_999\"\n}"
+        },
+        "url": { "raw": "http://localhost:4000/api/v1/jobs", "protocol": "http", "host": ["localhost"], "port": "4000", "path": ["api", "v1", "jobs"] }
+      }
+    },
+    {
+      "name": "Jobs - List Jobs",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "x-api-key", "value": "apex_live_key_99887766" }],
+        "url": { "raw": "http://localhost:4000/api/v1/jobs", "protocol": "http", "host": ["localhost"], "port": "4000", "path": ["api", "v1", "jobs"] }
+      }
+    },
+    {
+      "name": "Chaos - Trigger Worker Crash",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-api-key", "value": "apex_live_key_99887766" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"WORKER_CRASH\"\n}"
+        },
+        "url": { "raw": "http://localhost:4000/api/v1/chaos/trigger", "protocol": "http", "host": ["localhost"], "port": "4000", "path": ["api", "v1", "chaos", "trigger"] }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  apexqueue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apexqueue-engine
+    ports:
+      - "4000:4000"
+      - "3000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - JWT_SECRET=apex_super_secret_jwt_key_2026
+    volumes:
+      - apexdata:/app/data
+    restart: unless-stopped
+
+volumes:
+  apexdata:
+    driver: local
