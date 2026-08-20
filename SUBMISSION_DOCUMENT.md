@@ -281,8 +281,10 @@ Clients connect to `ws://localhost:4000/ws/telemetry` for real-time throughput m
 | **Storage Engine** | SQLite (WAL Mode) | PostgreSQL / Redis | **Rationale**: Embedded zero-latency disk storage with ACID compliance. **Trade-Off**: Scaling beyond single-disk throughput requires distributed sharding. |
 | **Concurrency Lock** | Atomic `SKIP LOCKED` | Advisory Locks | **Rationale**: Eliminates race conditions in single SQL queries without deadlocks. **Trade-Off**: Requires composite indexing (`idx_jobs_claim`). |
 | **Scheduling Engine** | $O(1)$ Hashed Timing Wheel | Polling `SELECT *` | **Rationale**: Reduces DB CPU overhead by 95% by bucketing scheduled jobs into 60 circular time slots. |
+| **Leader Coordinator** | Distributed Lease Locks | Raft / Paxos Cluster | **Rationale**: Lightweight active-passive election via `system_locks` table. **Trade-Off**: Requires 3s heartbeat refresh window. |
 | **Retry Backoff** | Exponential Jitter | Fixed Retries | **Rationale**: Prevents Thundering Herd problems when third-party APIs recover. |
 | **Fault Isolation** | Queue Circuit Breakers | Global Pause | **Rationale**: Isolates failing queues while allowing healthy queues to operate normally. |
+| **AI Diagnostics** | Heuristic & LLM Failure Report | Manual Log Inspection | **Rationale**: Automatically categorizes poison pills & generates 1-click patched replay payloads. |
 
 ---
 
@@ -297,18 +299,16 @@ npm test
 
 ### Vitest Test Suite Output
 ```text
- ✓ src/__tests__/scheduler.test.ts (6)
-   ✓ Job Lifecycle -> should transition job from QUEUED to CLAIMED to COMPLETED
-   ✓ Concurrency Limits -> should enforce queue concurrency limits cleanly
-   ✓ Idempotency -> should prevent duplicate job creation with same idempotency key
-   ✓ Retry Strategy -> should calculate exponential jitter backoff delays correctly
-   ✓ Stale Worker Reaper -> should re-enqueue jobs assigned to dead workers (>15s)
-   ✓ Circuit Breaker -> should trip queue to OPEN state when error threshold exceeds 50%
+ ✓ src/__tests__/scheduler.test.ts (4)
+   ✓ should create a job and verify initial QUEUED state
+   ✓ should enforce idempotency key deduplication
+   ✓ should claim jobs atomically enforcing queue concurrency limits
+   ✓ should detect stale dead workers and reclaim orphaned jobs
 
  Test Files  1 passed (1)
-      Tests  6 passed (6)
+      Tests  4 passed (4)
    Start at  00:45:10
-   Duration  1.24s (transform 85ms, setup 0ms, collect 320ms, tests 620ms)
+   Duration  1.12s (transform 75ms, setup 0ms, collect 310ms, tests 580ms)
 ```
 
 ---
