@@ -278,7 +278,7 @@ stateDiagram-v2
 
 ## 5. Relational Database Schema (16 Entities)
 
-### Isometric 3D ER Diagram
+### Master Relational Database ER Diagram
 <div align="center">
   <img src="docs/assets/er_diagram.png" alt="ApexQueue Enterprise Relational Database ER Diagram" width="100%" />
 </div>

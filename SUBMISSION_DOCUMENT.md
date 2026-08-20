@@ -158,9 +158,9 @@ flowchart TD
 
 ---
 
-## 3. Database Design & 3D ER Diagram
+## 3. Database Design & Relational ER Diagram
 
-### 3D Relational Database ER Diagram
+### Master Relational Database ER Diagram
 <div align="center">
   <img src="docs/assets/er_diagram.png" alt="ApexQueue Enterprise Relational Database ER Diagram" width="100%" />
 </div>
