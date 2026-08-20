@@ -558,4 +558,4 @@ Evaluators can import the complete REST API collection into Postman:
 
 ## 10. License & Credits
 
-Distributed under the **MIT License**. Created by [Lakshman](https://github.com/Lakshman2405) for enterprise distributed systems evaluation.
+Distributed under the **MIT License**. Created by [Sikhakolli Lakshman Guru Sai](https://github.com/Lakshman2405) for enterprise distributed systems evaluation.

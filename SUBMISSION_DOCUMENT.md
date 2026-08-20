@@ -4,7 +4,7 @@
 
 # ApexQueue: Enterprise Distributed Job Scheduler & Workflow Engine
 
-**Candidate**: Lakshman  
+**Candidate Name**: Sikhakolli Lakshman Guru Sai  
 **GitHub Repository**: [https://github.com/Lakshman2405/distributed-job-scheduler](https://github.com/Lakshman2405/distributed-job-scheduler)  
 **Live Production Web App**: [https://distributed-job-scheduler-4a2p.onrender.com](https://distributed-job-scheduler-4a2p.onrender.com)  
 **Tech Stack**: Node.js v24, TypeScript 5.4, React 18, SQLite (WAL mode), Vitest, Docker, WebSockets, Tailwind CSS  
