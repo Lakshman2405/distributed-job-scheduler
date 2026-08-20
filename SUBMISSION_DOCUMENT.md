@@ -71,7 +71,14 @@ docker-compose up --build
 
 ---
 
-## 2. System Architecture Specification & 3D Diagram
+## 2. System Architecture Specification & Diagrams
+
+### Enterprise Technical Blueprint (2D Specification)
+<div align="center">
+  <img src="docs/assets/Architecture.png" alt="ApexQueue Enterprise Technical Architecture Blueprint" width="100%" />
+</div>
+
+---
 
 ### 3D Isometric Architecture Diagram
 <div align="center">

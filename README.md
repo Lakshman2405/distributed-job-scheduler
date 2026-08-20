@@ -173,6 +173,13 @@ The built-in **Chaos Lab** (`ChaosEngine.ts`) allows engineers to inject real-wo
 
 ## 4. System Architecture Visualizations
 
+### Enterprise Technical Blueprint (2D Specification)
+<div align="center">
+  <img src="docs/assets/Architecture.png" alt="ApexQueue Enterprise Technical Architecture Blueprint" width="100%" />
+</div>
+
+---
+
 ### Isometric 3D Architecture Diagram
 <div align="center">
   <img src="docs/assets/architecture_diagram.png" alt="ApexQueue Enterprise Architecture" width="100%" />
