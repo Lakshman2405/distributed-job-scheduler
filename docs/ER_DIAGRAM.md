@@ -17,12 +17,14 @@ erDiagram
     PROJECTS ||--|{ WORKER_POOLS : defines
     PROJECTS ||--|{ QUEUES : owns
     PROJECTS ||--|{ WORKFLOWS : orchestrates
+    PROJECTS ||--|{ SCHEDULED_JOBS : schedules
     
     RETRY_POLICIES ||--|{ QUEUES : configures
     WORKER_POOLS ||--|{ QUEUES : routes
     WORKER_POOLS ||--|{ WORKERS : registers
     
     QUEUES ||--|{ JOBS : buffers
+    QUEUES ||--|{ SCHEDULED_JOBS : targets
     WORKFLOWS ||--|{ WORKFLOW_NODES : defines
     WORKFLOW_NODES ||--|{ JOBS : instantiates
     
@@ -38,7 +40,7 @@ erDiagram
 
 ---
 
-## 2. Table Specifications (14 Entities)
+## 2. Table Specifications (16 Entities)
 
 > [!TIP]
 > All primary keys use collision-resistant UUID strings (`uuidv4()`). All foreign key relationships enforce referential integrity with cascading behavior (`ON DELETE CASCADE`).
@@ -126,16 +128,18 @@ Core job execution record.
 Topological DAG node dependency map.
 - `parent_job_id` (VARCHAR 36, FK -> `jobs.id` ON DELETE CASCADE)
 - `child_job_id` (VARCHAR 36, FK -> `jobs.id` ON DELETE CASCADE)
-- PRIMARY KEY (`parent_job_id`, `child_job_id`)
 
 ### 11. `workers` & 12. `worker_heartbeats`
 Worker process node cluster registry and CPU/RAM telemetry metrics.
 
-### 13. `job_executions` & `job_logs`
+### 13. `job_executions` & 14. `job_logs`
 Execution attempt history, durations, stack traces, and streaming terminal logs.
 
-### 14. `dead_letter_queue`
-Poison-pill failure vault with AI root cause summary and patched payload preview.
+### 15. `scheduled_jobs`
+Cron definitions and next run timestamps for recurring jobs.
+
+### 16. `dead_letter_queue` & `system_locks`
+Poison-pill failure vault with AI root cause summary, and active-passive leader election locks.
 
 ---
 
@@ -143,11 +147,15 @@ Poison-pill failure vault with AI root cause summary and patched payload preview
 
 ```sql
 -- High-Performance Composite Index for O(1) Atomic Job Claims
-CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, run_at, priority DESC);
+CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, priority DESC, run_at ASC);
 
 -- Heartbeat Index for Stale Worker Detection
 CREATE INDEX idx_workers_heartbeat ON workers(status, last_heartbeat_at);
 
--- Idempotency Deduplication Unique Index
-CREATE UNIQUE INDEX idx_jobs_idempotency ON jobs(project_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
+-- Idempotency Deduplication Index
+CREATE INDEX idx_jobs_dedup ON jobs(deduplication_hash);
+
+-- Next Run Index for Cron Scheduler
+CREATE INDEX idx_scheduled_nextrun ON scheduled_jobs(status, next_run_at);
 ```
+

@@ -39,7 +39,7 @@
   - [Isometric 3D Architecture Diagram](#isometric-3d-architecture-diagram)
   - [System Flowchart](#system-flowchart)
   - [Worker Node Lifecycle State Machine](#worker-node-lifecycle-state-machine)
-- [5. Relational Database Schema (14 Entities)](#5-relational-database-schema-14-entities)
+- [5. Relational Database Schema (16 Entities)](#5-relational-database-schema-14-entities)
   - [Isometric 3D ER Diagram](#isometric-3d-er-diagram)
   - [Entity Specifications & Table Definitions](#entity-specifications--table-definitions)
   - [Indexing Rationale & Optimization](#indexing-rationale--optimization)
@@ -276,7 +276,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Relational Database Schema (14 Entities)
+## 5. Relational Database Schema (16 Entities)
 
 ### Isometric 3D ER Diagram
 <div align="center">
