@@ -169,22 +169,32 @@ flowchart TD
 ```mermaid
 erDiagram
     ORGANIZATIONS ||--|{ USERS : owns
-    ORGANIZATIONS ||--|{ PROJECTS : owns
-    PROJECTS ||--|{ QUEUES : contains
-    PROJECTS ||--|{ WORKFLOWS : defines
-    WORKFLOW_POOLS ||--|{ WORKERS : registers
+    ORGANIZATIONS ||--|{ PROJECTS : contains
+    PROJECTS ||--|{ WORKER_POOLS : defines
+    PROJECTS ||--|{ QUEUES : owns
+    PROJECTS ||--|{ WORKFLOWS : orchestrates
+    PROJECTS ||--|{ SCHEDULED_JOBS : schedules
+    
+    RETRY_POLICIES ||--|{ QUEUES : configures
+    WORKER_POOLS ||--|{ QUEUES : routes
+    WORKER_POOLS ||--|{ WORKERS : registers
+    
     QUEUES ||--|{ JOBS : buffers
-    RETRY_POLICIES ||--|{ QUEUES : governs
-    WORKFLOWS ||--|{ WORKFLOW_NODES : contains
+    QUEUES ||--|{ SCHEDULED_JOBS : targets
+    WORKFLOWS ||--|{ WORKFLOW_NODES : defines
+    WORKFLOW_NODES ||--|{ JOBS : instantiates
+    
+    JOBS ||--|{ JOB_DEPENDENCIES : parent_of
+    JOBS ||--|{ JOB_DEPENDENCIES : child_of
     JOBS ||--|{ JOB_EXECUTIONS : records
-    JOB_EXECUTIONS ||--|{ JOB_LOGS : emits
-    WORKERS ||--|{ WORKER_HEARTBEATS : emits
+    JOBS ||--|{ JOB_LOGS : emits
     JOBS ||--o| DEAD_LETTER_QUEUE : escalates
-    JOBS ||--|{ JOB_DEPENDENCIES : parent
-    JOBS ||--|{ JOB_DEPENDENCIES : child
+    
+    WORKERS ||--|{ WORKER_HEARTBEATS : emits
+    WORKERS ||--|{ JOB_EXECUTIONS : executes
 ```
 
-### Complete 14-Entity Schema Specification
+### Complete 16-Entity Schema Specification
 
 | Entity Table | Primary Key | Key Columns & Constraints | Performance Rationale |
 | :--- | :--- | :--- | :--- |
@@ -194,27 +204,35 @@ erDiagram
 | `worker_pools` | `id` (UUID) | `project_id` (FK), `tags` (`JSON`) | Tag-based worker capability routing |
 | `retry_policies` | `id` (UUID) | `strategy` (`FIXED`, `LINEAR`, `EXPONENTIAL_JITTER`) | Configurable backoff policy rules |
 | `queues` | `id` (UUID) | `project_id` (FK), `concurrency_limit`, `priority` | Partitioned queue execution parameters |
-| `jobs` | `id` (UUID) | `queue_id` (FK), `status`, `idempotency_key` | Core background job reservation unit |
-| `job_dependencies` | `parent_id, child_id` | Composite PK, `FK (parent_id, child_id)` | Directed Acyclic Graph step join graph |
 | `workflows` | `id` (UUID) | `project_id` (FK), `name`, `trigger_type` | Multi-step DAG workflow metadata |
-| `workflow_nodes` | `id` (UUID) | `workflow_id` (FK), `step_name`, `join_condition` | Pipeline node join rule configuration |
+| `workflow_nodes` | `id` (UUID) | `workflow_id` (FK), `queue_id` (FK) | Pipeline node join rule configuration |
+| `jobs` | `id` (UUID) | `queue_id` (FK), `status`, `deduplication_hash` | Core background job reservation unit |
+| `job_dependencies` | `id` (UUID) | `parent_job_id` (FK), `child_job_id` (FK) | Directed Acyclic Graph step join graph |
 | `workers` | `id` (UUID) | `worker_pool_id` (FK), `status`, `last_heartbeat` | Worker daemon cluster registry |
-| `worker_heartbeats` | `id` (UUID) | `worker_id` (FK), `cpu_percent`, `memory_mb` | Real-time worker cluster health history |
-| `job_executions` | `id` (UUID) | `job_id` (FK), `worker_id` (FK), `duration_ms` | Execution attempt logs & retry counts |
-| `job_logs` | `id` (UUID) | `job_id` (FK), `level`, `message` | Streaming terminal log console lines |
-| `dead_letter_queue` | `id` (UUID) | `job_id` (FK), `error_stack`, `ai_summary` | Poison-pill failure diagnostic vault |
+| `worker_heartbeats` | `id` (UUID) | `worker_id` (FK), `cpu_pct`, `memory_mb` | Real-time worker cluster health history |
+| `job_executions` | `id` (UUID) | `job_id` (FK), `worker_id` (FK), `status` | Execution attempt logs & retry counts |
+| `job_logs` | `id` (UUID) | `job_id` (FK), `execution_id` (FK), `level` | Streaming terminal log console lines |
+| `scheduled_jobs` | `id` (UUID) | `project_id` (FK), `queue_id` (FK), `cron_expression` | Cron definition & next run schedule |
+| `dead_letter_queue` | `id` (UUID) | `job_id` (FK), `failed_reason`, `ai_summary` | Poison-pill failure diagnostic vault |
 
 ### Composite Indexing Strategy
 ```sql
 -- High-Performance Composite Index for O(1) Atomic Job Claims
-CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, run_at, priority DESC);
+CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, priority DESC, run_at ASC);
+
+-- Delayed Job Pickup Index
+CREATE INDEX idx_jobs_status_runat ON jobs(status, run_at);
+
+-- Idempotency Deduplication Index
+CREATE INDEX idx_jobs_dedup ON jobs(deduplication_hash);
 
 -- Heartbeat Index for Stale Worker Detection
 CREATE INDEX idx_workers_heartbeat ON workers(status, last_heartbeat_at);
 
--- Idempotency Deduplication Unique Index
-CREATE UNIQUE INDEX idx_jobs_idempotency ON jobs(project_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
+-- Cron Scheduler Next Run Index
+CREATE INDEX idx_scheduled_nextrun ON scheduled_jobs(status, next_run_at);
 ```
+
 
 ---
 

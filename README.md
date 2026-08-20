@@ -313,13 +313,19 @@ To maintain low query latency under high load, ApexQueue creates dedicated compo
 
 ```sql
 -- High-Performance Composite Index for O(1) Atomic Job Claims
-CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, run_at, priority DESC);
+CREATE INDEX idx_jobs_claim ON jobs(queue_id, status, priority DESC, run_at ASC);
+
+-- Delayed Job Pickup Index
+CREATE INDEX idx_jobs_status_runat ON jobs(status, run_at);
+
+-- Idempotency Deduplication Index
+CREATE INDEX idx_jobs_dedup ON jobs(deduplication_hash);
 
 -- Heartbeat Index for Stale Worker Detection
 CREATE INDEX idx_workers_heartbeat ON workers(status, last_heartbeat_at);
 
--- Idempotency Deduplication Unique Index
-CREATE UNIQUE INDEX idx_jobs_idempotency ON jobs(project_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
+-- Cron Scheduler Next Run Index
+CREATE INDEX idx_scheduled_nextrun ON scheduled_jobs(status, next_run_at);
 ```
 
 ---
