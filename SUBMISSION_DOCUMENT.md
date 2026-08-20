@@ -22,7 +22,7 @@ ApexQueue is a production-inspired, multi-tenant distributed background job exec
 
 - [1. Source Code & Setup Instructions](#1-source-code--setup-instructions)
 - [2. System Architecture Specification & 3D Diagram](#2-system-architecture-specification--3d-diagram)
-- [3. Database Design & 3D ER Diagram](#3-database-design--3d-er-diagram)
+- [3. Database Design & Relational ER Diagram](#3-database-design--relational-er-diagram)
 - [4. Complete API & Telemetry Documentation](#4-complete-api--telemetry-documentation)
 - [5. Major Design Decisions & Trade-Off Analysis](#5-major-design-decisions--trade-off-analysis)
 - [6. Automated Testing & Verification Suite](#6-automated-testing--verification-suite)
