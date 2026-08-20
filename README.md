@@ -534,7 +534,7 @@ docker-compose up --build
 
 ### 1-Click Postman API Collection
 Evaluators can import the complete REST API collection into Postman:
-- **Location**: [`docs/ApexQueue.postman_collection.json`](file:///c:/projects/distributed-job-scheduler/docs/ApexQueue.postman_collection.json)
+- **Location**: [`docs/ApexQueue.postman_collection.json`](docs/ApexQueue.postman_collection.json)
 - Includes pre-configured endpoints for login, enqueuing jobs, listing queues, and triggering chaos resilience experiments.
 
 ---
